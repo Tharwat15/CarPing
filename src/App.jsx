@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import {
   BrowserRouter,
   Link,
@@ -565,11 +566,14 @@ function CarScanPage() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Generator />} />
-        <Route path="/car" element={<CarScanPage />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Generator />} />
+          <Route path="/car" element={<CarScanPage />} />
+        </Routes>
+      </BrowserRouter>
+      <Analytics />
+    </>
   );
 }
