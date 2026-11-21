@@ -35,6 +35,23 @@ const LABELS = {
   },
 };
 
+function normalizePhone(rawPhone, defaultCountryCode = "20") {
+  let digits = (rawPhone || "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  if (digits.startsWith("00")) {
+    digits = digits.slice(2);
+  }
+
+  if (digits.startsWith("0") && defaultCountryCode) {
+    digits = `${defaultCountryCode}${digits.slice(1)}`;
+  } else if (digits.length === 10 && defaultCountryCode) {
+    digits = `${defaultCountryCode}${digits}`;
+  }
+
+  return digits;
+}
+
 function Generator() {
   const [name, setName] = useState("");
   const [model, setModel] = useState("");
@@ -46,21 +63,23 @@ function Generator() {
   const qrWrapperRef = useRef(null);
   const t = LABELS[lang];
 
-  const cleanPhone = phone.replace(/[^\d+]/g, "");
-  const digitsOnly = cleanPhone.replace(/\D/g, "");
+  const normalizedDigits = normalizePhone(phone, "20");
+  const internationalPhone = normalizedDigits ? `+${normalizedDigits}` : "";
 
   const shareUrl = useMemo(() => {
     const params = new URLSearchParams();
     if (name.trim()) params.set("name", name.trim());
     if (model.trim()) params.set("model", model.trim());
-    if (cleanPhone) params.set("phone", cleanPhone);
+    if (internationalPhone) params.set("phone", internationalPhone);
     if (note.trim()) params.set("note", note.trim());
     params.set("lang", lang);
     return `${window.location.origin}/car?${params.toString()}`;
-  }, [name, model, cleanPhone, note, lang]);
+  }, [name, model, internationalPhone, note, lang]);
 
   const isReady =
-    name.trim().length > 0 && model.trim().length > 0 && digitsOnly.length >= 8;
+    name.trim().length > 0 &&
+    model.trim().length > 0 &&
+    normalizedDigits.length >= 8;
 
   const handleCopyLink = async () => {
     if (!isReady) return;
@@ -80,16 +99,13 @@ function Generator() {
     canvas.height = height;
     const ctx = canvas.getContext("2d");
 
-    // Pure white card background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
-    // Blue outer border
     ctx.strokeStyle = "#2563eb";
     ctx.lineWidth = 8;
     ctx.strokeRect(18, 18, width - 36, height - 36);
 
-    // Royal blue header band
     ctx.fillStyle = "#2563eb";
     ctx.fillRect(22, 22, width - 44, 155);
 
@@ -98,13 +114,11 @@ function Generator() {
     ctx.font = "bold 32px sans-serif";
     ctx.fillText(t.tag, width / 2, 110);
 
-    // QR Code centered
     const qrSize = 390;
     const qrX = (width - qrSize) / 2;
     const qrY = 215;
     ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
 
-    // Car & driver details
     ctx.fillStyle = "#1e3a8a";
     ctx.font = "bold 32px sans-serif";
     ctx.fillText(model.trim(), width / 2, 660);
@@ -117,7 +131,6 @@ function Generator() {
     ctx.font = "20px sans-serif";
     ctx.fillText(t.sub, width / 2, 742);
 
-    // Soft blue footer bar
     ctx.fillStyle = "#eff6ff";
     ctx.fillRect(22, 815, width - 44, 63);
     ctx.fillStyle = "#1d4ed8";
@@ -137,7 +150,6 @@ function Generator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50/90 via-white to-blue-50/50 text-slate-900">
-      {/* Top Navbar */}
       <header className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-blue-100 print:hidden">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -181,7 +193,6 @@ function Generator() {
         </div>
       </header>
 
-      {/* Responsive Main Container */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <div className="mb-6 sm:mb-8 max-w-2xl print:hidden">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-950">
@@ -194,7 +205,6 @@ function Generator() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-          {/* Form Panel */}
           <section className="lg:col-span-7 bg-white rounded-2xl border border-blue-100 shadow-sm p-5 sm:p-7 space-y-5 print:hidden">
             <div className="flex items-center justify-between pb-3 border-b border-blue-50">
               <div className="flex items-center gap-2 text-sm font-bold text-blue-950">
@@ -247,8 +257,9 @@ function Generator() {
               />
               <p className="text-xs text-slate-500 mt-1">
                 Include your country code (such as{" "}
-                <span className="font-mono text-blue-900">+20</span>) so
-                WhatsApp opens directly.
+                <span className="font-mono text-blue-900">+20</span>)—local{" "}
+                <span className="font-mono">010...</span> numbers also default
+                to <span className="font-mono">+20</span>.
               </p>
             </div>
 
@@ -274,7 +285,6 @@ function Generator() {
             </div>
           </section>
 
-          {/* Blue & White Card Preview + Export */}
           <section className="lg:col-span-5 bg-white rounded-2xl border border-blue-100 shadow-sm p-5 sm:p-6 flex flex-col items-center">
             <div className="w-full flex items-center justify-between mb-4 print:hidden">
               <span className="text-xs font-bold uppercase tracking-wider text-blue-900/70">
@@ -287,7 +297,6 @@ function Generator() {
               )}
             </div>
 
-            {/* Printable Blue & White Windshield Card */}
             <div
               dir={lang === "ar" ? "rtl" : "ltr"}
               className="w-full max-w-[300px] rounded-2xl overflow-hidden bg-white border-2 border-blue-600 shadow-sm"
@@ -326,7 +335,6 @@ function Generator() {
               </div>
             </div>
 
-            {/* Responsive Action Buttons */}
             <div className="w-full max-w-[300px] mt-5 space-y-2.5 print:hidden">
               <button
                 type="button"
@@ -407,24 +415,26 @@ function CarScanPage() {
   const [selected, setSelected] = useState(REASONS[0]);
   const [copied, setCopied] = useState(false);
 
-  const name = searchParams.get("name") || "Driver";
-  const model = searchParams.get("model") || "Vehicle";
-  const rawPhone = searchParams.get("phone") || "";
-  const note = searchParams.get("note") || "";
-  const digitsOnly = rawPhone.replace(/\D/g, "");
+  const name = searchParams.get("name")?.trim() || "Driver";
+  const model = searchParams.get("model")?.trim() || "Vehicle";
+  const rawPhone = searchParams.get("phone")?.trim() || "";
+  const note = searchParams.get("note")?.trim() || "";
+
+  const waDigits = normalizePhone(rawPhone, "20");
+  const displayPhone = waDigits ? `+${waDigits}` : rawPhone;
 
   const waMessage = encodeURIComponent(
     `Hello ${name} (${model}): ${selected.text}`,
   );
 
   const copyPhone = async () => {
-    if (!rawPhone) return;
-    await navigator.clipboard.writeText(rawPhone);
+    if (!displayPhone) return;
+    await navigator.clipboard.writeText(displayPhone);
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
   };
 
-  if (digitsOnly.length < 8) {
+  if (waDigits.length < 8) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
         <div className="max-w-sm w-full bg-white border border-blue-100 rounded-2xl p-6 text-center space-y-3 shadow-sm">
@@ -502,7 +512,7 @@ function CarScanPage() {
                 Phone number
               </span>
               <span className="font-mono text-sm font-semibold text-blue-950 truncate block">
-                {rawPhone}
+                {displayPhone}
               </span>
             </div>
             <button
@@ -521,7 +531,7 @@ function CarScanPage() {
 
           <div className="space-y-2.5 pt-1">
             <a
-              href={`tel:${rawPhone}`}
+              href={`tel:${displayPhone}`}
               className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl text-sm shadow-sm shadow-blue-600/20 transition"
             >
               <Phone className="w-4 h-4" />
@@ -529,7 +539,7 @@ function CarScanPage() {
             </a>
 
             <a
-              href={`https://wa.me/${digitsOnly}?text=${waMessage}`}
+              href={`https://wa.me/${waDigits}?text=${waMessage}`}
               target="_blank"
               rel="noreferrer"
               className="w-full flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-blue-700 font-bold py-3.5 px-4 rounded-xl text-sm border-2 border-blue-600 transition"
