@@ -1,16 +1,27 @@
-# React + Vite
+# CarPing
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A mobile-responsive, zero-backend QR contact card web application for vehicles. Drivers can generate a printable windshield QR code encoding their details directly in the URL so anyone who scans it can quickly call or message them on WhatsApp.
 
-Currently, two official plugins are available:
+**Live App:** https://car-ping.vercel.app/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Zero-Backend Architecture:** Driver name, vehicle model, phone number, optional note, and language preference are encoded into URL query parameters (`?name=...&model=...&phone=...&note=...&lang=...`) with no database or backend server required.
+- **Phone Number Normalization:** Converts local numbers (such as `010...` or 10-digit numbers) and `00`-prefixed numbers into standardized international digits (`20...` by default) so `https://wa.me/<number>` deep links work reliably.
+- **Bilingual Card Generator:** Supports English (`EN`) and Arabic (`عربي`, with RTL layout) for the windshield card preview.
+- **Export & Print Ready:** Download the card as a formatted PNG image, print directly from the browser, copy the scan link, or open a live preview of `/car`.
+- **Scan Landing Page (`/car`):** Displays vehicle and driver info, optional driver note, quick reach-out reason presets (blocking car, lights left on, quick check), one-tap phone copy, direct `tel:` call button, and pre-filled WhatsApp messaging.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the Oxlint configuration
+- **Framework & Bundler:** React, Vite
+- **Styling:** Tailwind CSS
+- **Routing:** `react-router-dom`
+- **QR Code Generation:** `qrcode.react`
+- **Icons:** `lucide-react`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Getting Started
+
+1. Install dependencies:
+   ```bash
+   npm install
